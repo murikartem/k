@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta  name="viewport" content="width=device-width, initial scale=1.0">
+    <title>Title</title>
+</head>
+<body>
+{% for item in data %}
+<p>Номер-{{item[0]}}, название - {{item[1]}}, картинка - {{item[2]}}, описание - {{item[3]}}<img src="{{item[2]}}"></p>
+{% endfor %}
+</body>
+</html>
