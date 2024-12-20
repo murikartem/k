@@ -4,8 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Форма регистрации</title>
+    <style>
+        .success{color:green;}
+        .danger{color:red;}
+    </style>
 </head>
 <body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<p class="{{ category  }}" style="position: fixed; top: -10px; left: 10px;">{{  message  }}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
 <h2>Регистрация</h2>
 <form action="/save_register/" method="post">
     <!-- Поля для ввода текста -->
