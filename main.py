@@ -48,25 +48,30 @@ def main_page():
 def login_page():
     return render_template('login.html')
 
-@app.route('/authorization/', methods=['POST', 'GET'])
-def authorization_page():
+
+@app.route('/authorization/', methods=['POST'])
+def authorization():
     login = request.form['username']
     password = request.form['password']
-    cursor.execute('SELECT username, password FROM users')
+    cursor.execute('select username, password from users where username=(?)', (login,))
     data = cursor.fetchall()
-    print(login)
-    print(data)
-    if login in data and password in data:
-        flash('Авторизация прошла успешно', 'success')
-        session['login'] = True
-        session['username'] = login
-        session.permanent = False
-        app.permanent_session_lifetime = timedelta(minutes=1)
-        session.modified = True
+    if not data:
+        flash('Неверный логин', 'danger')
+        return redirect(url_for('page_login'))
+    if password == data[0][1]:
+        session['login'] = True  # флаг успешной авторизации
+        session['username'] = login  # запоминаем имя пользователя который авторизовался
+        session.permanent = True  # время сессии, если False, то сессия до перезапуска браузера
+        # если True, то настраиваем время сессии (по умолчанию 31 день)
+        app.permanent_session_lifetime = timedelta(minutes=1000)
+        session.modified = True  # отвечает за передачу измененных переменных сессии от запроса к запросу
+
+        flash('Вы успешно авторизовались', 'success')
         return redirect(url_for('main_page'))
-    else:
-        flash('Авторизация прошла неуспешно', 'danger')
-        return redirect(url_for('login_page'))
+    flash('Неверный пароль', 'danger')
+    return redirect(url_for('page_login'))
+
+
 
 @app.route('/register/', methods=['POST', 'GET'])
 def register_page():
@@ -93,4 +98,17 @@ def logout():
     flash('Вы вышли из профиля', 'danger')
     return redirect(url_for('main_page'))
 
-app.run(debug=True)
+@app.route('/save_post/', methods=['POST'])
+def save_post():
+    file = request.files.get('image')
+    title = request.form['title']
+    description = request.form['description']
+    url = f'static/uploads/{file.filename}'
+    file.save(url)
+    cursor.execute('insert into posts (title,text, image) values (?,?,?)', (title, description, url))
+    con.commit()
+
+    flash('Пост добавлен', 'success')
+    return redirect(url_for('main_page'))
+
+app.run(port = 2000, debug=True)
